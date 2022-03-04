@@ -40,7 +40,7 @@ While qemu has a command line interface and a monitor to interact with running g
 
 Canonical produces a variety of cloud-specific images, which are available directly on the cloud’s themselves as well as on https://cloud-images.ubuntu.com.
 
-<img src="./images/ubuntu-cloud-image-repository.png" alt="DevOps Venn Diagram" style="zoom:50%;" />
+<img src="./images/ubuntu-cloud-image-repository.png" alt="Ubuntu Cloud Images" style="zoom:50%;" />
 
 #### Private Clouds
 
@@ -75,4 +75,3 @@ Use cloud-init to configure:
 #### Works with many popular operating systems
 
 While cloud-init started life in Ubuntu, it is now available for most major Linux and FreeBSD operating systems. For cloud image providers, then cloud-init handles many of the differences between cloud vendors automatically — for example, the official Ubuntu cloud images are identical across all public and private clouds.
-

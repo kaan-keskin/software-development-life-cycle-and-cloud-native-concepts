@@ -103,4 +103,86 @@ Workload mobility enables you to:
 
 Three migration types are defined for virtualization technology: cold, warm, and live. Each migration type is characterized by the amount of time during which the workload is not available, and by the amount of workload state (for example, active sessions or open transactions) that is lost during the migration process.
 
+See Table below for a summary of the differences between these migration types.
 
+| Type | Outage Duration | Stateful Transfer |
+| --- | --- | --- |
+| Cold | minutes to hours | No |
+| Warm | Tens of seconds | Yes |
+| Live | Less than one second | Yes |
+
+The cold migration process requires the following three steps:
+1. Orderly halting of the original physical host and its workload(s).
+2. Transfer of data files from the old storage to new storage, or reconfiguration of shared storage.
+3. Start-up on the new physical host and the migrated workloads.
+
+P2V and V2V conversions are two common examples of cold migrations. A P2V (physical-to-virtual) conversion involves converting an existing physical server workload to a virtual environment (VE) on a host server. A V2V (virtual-to-virtual) conversion involves converting servers and their associated workloads from one virtualization technology to another.
+
+V2P (virtual-to-physical) conversions, while uncommon, are also possible. For example, after virtualizing a mission-critical online transaction processing (OLTP) application, you may discover that the performance of the virtualized system is unsatisfactory.
+
+A warm migration does not require halting and rebooting of the VE. Unlike a cold migration, active processes on the VE are not shut down during a warm migration, so current state information is maintained. However, a warm migration requires a noticeable service outage, usually on the order of tens of seconds. During that time, the virtualization technology performs the following three steps:
+
+1. Pauses the VE and its processes on the original system.
+2. Creates a copy of the VE on the destination (or target) system.
+3. Copies a memory image of the related processes from the original VE to the new VE.
+
+The VE processes then continue their execution on the target system and the original memory image is erased.
+
+Similar to a warm migration, a live migration does not require halting and rebooting of the VE. But unlike a warm migration, the service outage associated with a live migration is too short (usually less than one second) for most users to notice and any applications running on the VE are not affected by the outage. The live migration method performs these four steps:
+
+1. Creates a copy of the VE on the destination (or target) system while the VE is still running.
+2. Copies a memory image of the related processes from the original VE to the new VE.
+3. Pauses the VE and its processes on the original system and transfers a final set of data to the new VE.
+4. Passes control of the VE from the original system to the new system.
+
+### Flexible, rapid provisioning
+
+Provisioning traditional systems is an expensive and time-consuming process for any organization, which can take days or weeks. Virtualization tools provide IT organizations with a rapid, flexible provisioning capability to support their enterprise requirements. Because virtualized OS environments have a very small disk footprint, IT staff can easily create and clone master OS images for use in virtually any deployment scenario.
+
+Provisioning a new system with virtualization tools takes minutes instead of days and simply involves selecting and fine-tuning (for example, configuring a system name and IP address) the appropriate OS image, then booting it up on the new host server!
+
+### Testing and staging
+
+Many test environments are configured for a specific purpose, for example to test a new application or a modification to an existing application. But these test environments are often underutilized because testing is not typically performed every day or on a regular basis.
+
+Most functional testing of systems and applications can be performed today in a virtualized environment without significantly affecting the outcome of the tests. This allows organizations to consolidate their testing environments and run individual tests on separate VEs. VEs can be quickly provisioned and configured to test specifications and easily decommissioned or re-purposed when the test is concluded.
+
+Virtualization is best used for functional testing rather than performance or scalability testing. Performance testing in virtualized environments is appropriate only if the production workload will be deployed in a VE.
+
+## Understanding System Virtualization Models
+
+Three models for system virtualization are commonly used: hardware partitioning, virtual machines, and operating system (OS) virtualization. Each model can be described in terms of two characteristics that have an inverse relationship — flexibility and isolation. Typically, as more isolation is required between VEs, less flexibility is provided in resource allocation. Conversely, flexibility requires resource sharing, which reduces isolation between VEs.
+
+Flexibility versus isolation in system virtualization models.
+
+<img src="./images/virtualization-models.png" alt="System Virtualization Models" style="zoom:50%;" />
+
+### Hardware partitioning
+
+Hardware partitions offer the most isolation but the least flexibility. Hardware partitioning ensures complete electrical segregation of computer hardware resources — CPUs, RAM, and I/O components — to create multiple independent computers within one computer. Each isolated grouping of hardware is called a partition or domain.
+
+A partition runs its own copy of an operating system and has complete control over its hardware. The OS runs directly on the hardware just as in a traditional physical (nonvirtualized) environment. However, any single failure — whether in hardware or software — in a component of one VE cannot affect another VE in the same physical server.
+
+Partitions are most appropriate for business-critical workloads where service availability is the most important factor.
+
+### Virtual machines
+
+The most popular virtualization model is the virtual machine. This model mimics multiple servers or workloads — virtual environments (VEs) — on a single physical (or host) system, each running its own OS. Each of these VEs is called a virtual machine. Virtual OS instances are managed by software or firmware — or a combination of both — which also provides multiplexed access to the hardware. This supporting layer of firmware/software — the hypervisor — gives this model its flexibility, but also adds performance overhead while performing its various virtualization functions.
+
+Fault isolation varies among different implementations of hypervisors. Each shared resource in the virtual machine model is a potential single point of failure, including the hypervisor itself.
+
+Virtual machines typically represent a middle ground between the isolation of hard partitions and the flexibility of operating system virtualization, or OSV. The additional isolation of separate OS instances compared to OSV allows for the consolidation of completely different operating systems. The hypervisor layer also provides a convenient point of separation between VEs, thereby facilitating and simplifying VE mobility.
+
+### Operating System Virtualization (OSV)
+
+The ability to provide multiple isolated execution environments in one operating system (OS) instance is called operating system virtualization (OSV).
+
+Hardware partitioning and virtual machine technologies share a common trait: Each VE contains an instance of an operating system. Most of those technologies allow different operating systems to run concurrently.
+
+In contrast, operating system virtualizations, also known as zones or containers, use features of the operating system to create VEs that are not separate copies of an operating system. This approach provides the appearance of an individual operating system instance for each VE. Most OSV implementations provide the same OS types as the hosting OS. 
+
+Among the virtualization models, OSVs provide the maximum flexibility but the least isolation between VEs. Isolation in OSVs is enforced by the OS kernel, rather than by a hypervisor (as in VMs) or hardware (as in partitions). All processes share the same OS kernel, which must provide a robust mechanism to prevent two different VEs from interacting directly. Without this isolation, one VE could affect the operation of another VE. The kernel must be modified so that the typical inter-process communication (IPC) mechanisms do not work between processes in different VEs.
+
+OSV implementations usually require little disk space, consume minimal RAM, and add very little CPU overhead.
+
+System virtualization models include hardware partitioning, virtual machines, and operating system (OS) virtualization.
