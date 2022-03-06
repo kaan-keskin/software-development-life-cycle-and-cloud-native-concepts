@@ -4,7 +4,7 @@ Editors: **Kaan Keskin**
 
 Date: March 2022
 
-Available at: https://github.com/kaan-keskin/cloud-native-concepts
+Available at: https://github.com/kaan-keskin/software-development-life-cycle-and-cloud-native-concepts
 
 **Resources:**
 

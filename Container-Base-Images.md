@@ -4,7 +4,7 @@ Editors: **Kaan Keskin**
 
 Date: March 2022
 
-Available at: https://github.com/kaan-keskin/cloud-native-concepts
+Available at: https://github.com/kaan-keskin/software-development-life-cycle-and-cloud-native-concepts
 
 **Resources:**
 
@@ -123,14 +123,91 @@ To understand their perspective, consider what happens if a critical vulnerabili
 
 Without an SOE, or at least policies to govern what base images are used, an organization could wind up in a situation depicted in Figure below, where base images covering 14 different operating systems are used.
 
+<img src="./images/no-soe.png" alt="Multiple versions of software due lack of an SOE for base images" style="zoom:50%;" />
+
+In the environment depicted above, there are 11 different versions of OpenSSL and 8 different versions of the glibc C library. The situation could even be worse than that, given that there might be common source versions numbers across OS versions, but the actual packages are different due to different patch levels, or different configuration flags used at compilation. Another complication is that different distributions don’t use the same conventions for naming and versioning packages. One distribution might package all files for a piece of software into a single larger package, where others break it into a number of smaller packages.
+
+The above scenario might seem contrived, however consider that a typical application landscape includes language runtimes, database, web, and cache servers. So there might be base images for Java, Python, PHP, MySQL, PostgreSQL, Reds, Apache HTTPD, Apache Tomcat, and Nginx to satisfy application dependencies.
+
+The availability of pre-built container images for software components in public registries gives developers a wealth of choices. The developer selecting the image for a database might focus on choosing the latest version, but not investigate what OS forms the base of those images. Or they might choose an image based simply on the smallest image size, even though the base Linux distribution for that image might not be something an enterprise would choose to run in their environment.
+
+Due to the potential for software versions to multiply in an environment, having an SOE for containers is just as important as an SOE for operating systems. Figure below shows how the number of versions of system software in an environment can be reduced by making a container base image part of your SOE.
+
+<img src="./images/soe-ubi8.png" alt="Standardizing on a container base image to control software versions" style="zoom:50%;" />
+
+### Responsibility for maintaining the software stack inside of container images
+
+Changing the way applications are distributed shifts some of the roles and responsibilities for maintaining the software that supports an application. To understand the responsibilities with container-based application delivery, it is helpful to contrast it with traditional and the appliance/VM-based application delivery.
+
+#### Traditional application delivery
+
+For traditional application delivery, the application is delivered as a package (.rpm, .deb, .tar, etc.) that is compatible with the systems used by the consumers of the application. The consumer installs the application on their system following the developer’s instructions. Any necessary additional software like libraries, runtimes, or servers necessary to run the application might be specified in the instructions. Package managers like YUM might pull in additional packages to satisfy dependencies.
 
 
+The developer is responsible for maintaining the application and not much else. It is up to the consumer of the application to maintain the OS and other supporting software. If an OS package is updated due to a disclosure in the **Common Vulnerabilities and Exposures** (CVE) system, it’s the consumer’s responsibility to track and install it.
 
+In this model, while the developer has less responsibility, they have the additional work of building, testing, and supporting their software on the multitude of configurations they chose to support. These configurations are likely largely dictated by their customer’s demands.
 
+#### Appliance/VM-based application delivery
 
+In this model, the developer of an application delivers their application to the consumer in the form of a physical or virtual appliance, like a VM image. The developer has the additional work to build the VM image or appliance that runs the application, but only needs to build, test, and support the application on the configuration of the custom built appliance/VM.
 
+The application consumer only needs to run the appliance, or in the VM case run it on a supported hypervisor with adequate resources. The consumer looks to the developer for all updates because the appliance/VM is essentially a black box.
 
+The developer is responsible for maintaining essentially everything, including the host OS, libraries, and any required/supporting software like web and database servers, that run on the appliance/VM. The developer must make sure OS patches get applied, or periodically ship and install updated VM images, which often turns out to be cumbersome.
 
+#### Container-based application delivery
+
+Similar to the appliance/VM model, when using container-based delivery the developer of the application selects the complete runtime environment for the application. The developer controls everything from the OS userland up to the application code itself. Containers make this process much simpler and easier than delivering an appliance or VM image.
+
+The consumer of the application needs to provide and maintain a suitable container host and container runtime environment. The consumer is responsible for updating things like the Linux kernel, the container engine, and its dependencies.
+
+To the application consumer, the contents of the container(s) are basically a black box. The developer who provided the application in container(s) is responsible for everything in the application container(s) including the OS base image, any intermediate images, and any packages installed in the container. This also applies to any images that are pulled and customized. So for example if the developer takes a database image, layers their application-specific customization on top of it, and then produces a new image that users of the application consume, the developer is now responsible for that image.
+
+It is important to know that container images once built are immutable. The only way a container image gets updated is to rebuild it. Any other containers that are built from that image will also need to be rebuilt to pick up the change.
+
+There is sometimes confusion over container tags vs. the cryptographic hashes that identify images. If you used the :latest tag to specify the image you are building your image from, that doesn’t mean if a new :latest image becomes available that the layer based on it will get updated the next time an image using it is pulled for running.
+
+When container images are built, any images that are used for source layers are identified by their immutable cryptographic hash, not the tag that was used. If you use a tool that allows you to inspect a container image, you can see that the source layers are specified by their cryptographic hash, not by tags. You can also see the same thing when pushing and pulling image layers.
+
+Rebuilding the container image is the only way to pick up the updated base image layer. So if there is a CVE for one of the components inside of a container, the developer of the container is responsible for making an updated image available to the consumers of their application. The net result is that the responsibility for maintaining the components in a container-based application is very similar to appliance/VM-based application delivery. Fortunately, with containers it is much easier to build a new image and make it available.
+
+It is probably worth noting that a consumer that is unable to obtain updated images from a developer has a number of additional options with containers, including rebuilding the image if all of the sources are available. Alternatively, a new patched image could be produced by running a build with the original image as the base and adding the necessary fixes. After which the patched image needs to be run instead of the original.
+
+### Considerations for choosing a source of base images
+
+There are a number of things to consider when choosing a source of base images to use as part of an SOE for containers. A primary concern is availability of updates. However, this is more complicated than just using the latest code. Updating code often introduces regressions and new CVEs. Testing is needed to make sure that updates don’t cause more problems than they solve.
+
+Over the last decade or more, security consciousness has raised considerably. Performance engineering has similar concerns but hasn’t historically received the same level of attention as security. Language runtimes, web servers, and libraries like openssl all affect performance in different ways when applications are run under load. Just pulling in the latest upstream code does not guarantee good performance. Similar to security and functionality, performance regressions are often introduced without notice.
+
+Updated software also needs to be tested and tuned by an enterprise-grade performance engineering team.
+
+Some of the other things to consider when choosing a source of base images:
+
+**Architecture**: 
+- Are the images available in all the processor architectures that might be needed today or in the future?
+- What C library, core utilities, and compilers are used to produce the images?
+
+**Life cycle**:
+- What are the update policies and commitments for providing updated images?
+- How long will updates be available for the versions of software used in the original releases?
+
+**Security, reliability, and performance**:
+- What are the processes and commitments for finding, fixing, and communicating information about security vulnerabilities and bugs?
+- Are there reasonable processes for consumers to report and track security, reliability, or performance issues?
+- Is there a proactive security response team that is testing for issues?
+- Are there reasonable policies and practices for responsible disclosure of sensitive security vulnerabilities?
+- Is there a proactive performance team that is testing performance on enterprise-grade hardware and tuning libraries and other components?
+- What testing is performed to make sure that updates for security, performance, or bugs retain the expected functionality?
+
+**Provenance**:
+- Can the contents of images be verified to be from a trusted source and free of any modifications since built?
+- Is all of the software actually open source with appropriate licenses?
+- Will you be able to fulfill the requirements for making the source code available for any GPL-licensed software in the base images you use in distributing your software?
+
+**Organization**:
+- Is there a product team capturing customer requirements and driving improvements?
+- Is the organization responsible for the images viable enough to be in existence for the long term?
 
 ## Vendor Provided Base Images
 
