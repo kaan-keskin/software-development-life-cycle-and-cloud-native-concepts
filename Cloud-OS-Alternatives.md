@@ -1,4 +1,4 @@
-# Cloud OS Alternatives
+# Cloud Operating System Alternatives
 
 Editors: **Kaan Keskin**
 

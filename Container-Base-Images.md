@@ -93,6 +93,39 @@ The concerns for the contents of container images are similar to choosing an OS 
 
 As a software developer, many of the above concerns might not seem very important. However, for consumers of your software, especially enterprises with critical business operations depending on software, these concerns are all important. 
 
+## Why choosing a source of base images is a strategic decision
+
+### Standard operating environments (SOEs) and containers
+
+Traditional IT organizations have long understood the value of a Standard Operating Environment (SOE). Historically, administrators implemented an SOE as a disk image, kickstart, or virtual machine image for mass deployment within an organization. This reduced operational overhead, fostered automation, increased reliability by reducing variance, and set security controls that increased the overall security posture of an environment.
+
+SOEs often include the base operating system (kernel and user space programs), custom configuration files, standard applications used within an organization, software updates, and service packs. It is far easier to troubleshoot a failed service at 2 a.m. if every server is running the same configuration. Some major advantages of an SOE are reduced cost as well as an increase in agility. The effort to deploy, configure, maintain, support, and manage systems and applications can all be reduced.
+
+Understanding the value of an SOE, a mature IT organization tightly controls the number of different operating systems and OS versions. The ideal number is one, but that isn’t usually feasible, so there are efforts to keep the number as small as possible. The IT organization therefore expends considerable effort to make sure that boxes aren’t added to the network with ad-hoc OS versions and configurations. The notable exception are applications that are delivered as virtual appliances, either in physical hardware form or virtual machines (VMs). If these virtual appliances are supported by a vendor, it can be reasoned that the vendor is responsible for maintaining the OS and all of the rest of the components on the appliance. Therefore the IT organization is not responsible for those virtual boxes.
+
+Through network security scanning, or worse, during the clean up after a security incident, IT organizations learned that there could be vulnerable software running on their virtual appliances. IT organizations found out some vendor’s practices for keeping appliances up-to-date and secure didn’t live up to their expectations. Being ultimately responsible for the security of their own systems and networks, IT organizations learned that they need to manage their vendors. IT needs to verify that their vendor’s have adequate practices and policies for ensuring the security and reliability of the vendor’s appliances/VMs. There is still an OS and other software on appliances and VMs that needs to be maintained.
+
+So what does this have to do with containers? Containers have dramatically improved development, deployment, and maintenance of applications. The ease with which containers can be deployed, and the isolation they offer, simplifies many aspects of IT management. The advent of containers, and to some degree DevOps practices, has led to the notion that traditional IT practices like SOEs and configuration management best practices are no longer relevant.
+
+With containers, it’s easy to think you can use whatever technology you want, wherever you want, whenever you want, without having a negative impact on your IT landscape. While it’s true that containers have a much smaller footprint and therefore have a much smaller surface area that could be vulnerable, they still have the components of a stripped down Linux OS inside. Those components still need to be maintained like traditional OS deployments. However, with containers, the number of versions to track quickly multiplies.
+
+Even in the world of cloud native and containers, a standard operating environment matters. The set of criteria that should be used to evaluate container base images is quite similar to what we’ve always used for Linux distributions.
+
+Evaluate things like security, performance, how long the life cycle is (you need a longer life cycle than you think), how large the ecosystem is, and what organization backs the Linux distribution used.
+
+### The impact of not standardizing container base images
+
+**The version explosion: how many different versions am I running?**
+
+When developers think about building a containerized application, their focus is typically on running a handful of containers. Even if building a big microservices application with dozens or hundreds of containers, the containers likely share a similar heritage, so developers really don’t think about the many versions of similar software that could be in play. To really understand the impact of the decisions developers make, you need to consider the consumers of your software and the IT environments for which they are responsible. Given the benefits containers offer, most IT organizations ultimately wind up running hundreds of container images, while large corporations could easily be running thousands of different images.
+
+To understand their perspective, consider what happens if a critical vulnerability or bug is discovered in a heavily used library like the OpenSSL cryptography library or the C library (glibc). The first task is identifying all the places the vulnerable versions are running. To do that they need to know what version is running on every system, which includes every container.
+
+Without an SOE, or at least policies to govern what base images are used, an organization could wind up in a situation depicted in Figure below, where base images covering 14 different operating systems are used.
+
+
+
+
 
 
 
